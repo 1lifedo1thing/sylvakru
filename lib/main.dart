@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:corner_radius_plugin/corner_radius_plugin.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gamepads/flutter_gamepads.dart';
@@ -51,6 +52,9 @@ Future<void> main() async {
   }
 
   await logger.init();
+  if (Platform.isIOS) {
+    await HomeWidget.setAppGroupId('group.com.afalphy.sylvakru');
+  }
   if (isMobile) {
     screenRadius = await CornerRadiusPlugin.init();
   } else {

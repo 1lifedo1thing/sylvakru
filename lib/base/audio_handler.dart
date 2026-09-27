@@ -3,9 +3,12 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/services.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:sylvakru/base/data/loader.dart';
+import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
@@ -70,6 +73,26 @@ Future<void> initAudioService() async {
       audioHandler.pause();
     }
   });
+
+  if (Platform.isIOS) {
+    const channel = MethodChannel('com.afalphy.audio_control');
+
+    channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'toggleFavorite':
+          if (currentSongNotifier.value != null) {
+            toggleFavoriteState(currentSongNotifier.value!);
+          }
+        case 'skipToPrevious':
+          audioHandler.skipToPrevious();
+        case 'togglePlay':
+          audioHandler.togglePlay();
+        case 'skipToNext':
+          audioHandler.skipToNext();
+        default:
+      }
+    });
+  }
 }
 
 class MyAudioHandler extends BaseAudioHandler {
@@ -148,7 +171,7 @@ class MyAudioHandler extends BaseAudioHandler {
     // });
   }
 
-  void updateIsPlaying(bool isPlaying) {
+  void updateIsPlaying(bool isPlaying) async {
     if (isPlaying) {
       _playLastSyncTime = DateTime.now();
     } else if (_playLastSyncTime != null) {
@@ -161,6 +184,9 @@ class MyAudioHandler extends BaseAudioHandler {
       if (!windowIsClosed) {
         setupTaskbar();
       }
+    } else if (Platform.isIOS) {
+      await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
+      await HomeWidget.updateWidget(iOSName: 'widgets');
     }
   }
 
@@ -625,6 +651,35 @@ class MyAudioHandler extends BaseAudioHandler {
 
     if (start == null) {
       _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
+    }
+    if (Platform.isIOS) {
+      await HomeWidget.saveWidgetData('title', getTitle(currentSong));
+      await HomeWidget.saveWidgetData('artist', getArtist(currentSong));
+      await HomeWidget.saveWidgetData('album', getAlbum(currentSong));
+
+      await HomeWidget.saveFile(
+        'coverPath',
+        await File(currentSong.picture.path).readAsBytes(),
+      );
+
+      await HomeWidget.saveWidgetData(
+        'coverColor',
+        currentCoverArtColor.toARGB32(),
+      );
+
+      await HomeWidget.saveWidgetData(
+        'foregroundColor',
+        contrastColorTheme.regular.toARGB32(),
+      );
+
+      await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
+
+      await HomeWidget.saveWidgetData(
+        'is_favorite',
+        currentSong.isFavoriteNotifier.value,
+      );
+
+      await HomeWidget.updateWidget(iOSName: 'widgets');
     }
   }
 
