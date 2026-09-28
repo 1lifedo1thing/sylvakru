@@ -52,7 +52,7 @@ Future<void> updateNowPlayingWidget() async {
   await HomeWidget.updateWidget(
     androidName: 'NowPlayingWidgetReceiver',
     qualifiedAndroidName: 'com.afalphy.sylvakru.NowPlayingWidgetReceiver',
-    iOSName: 'widgets',
+    iOSName: 'NowPlaying',
   );
 }
 

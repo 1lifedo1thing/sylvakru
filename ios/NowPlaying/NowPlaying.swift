@@ -346,7 +346,7 @@ struct NowPlayingWidgetEntryView: View {
 }
 
 struct NowPlaying: Widget {
-  let kind: String = "widgets"
+  let kind: String = "NowPlaying"
 
   var body: some WidgetConfiguration {
     StaticConfiguration(
