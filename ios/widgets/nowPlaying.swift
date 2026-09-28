@@ -71,7 +71,7 @@ struct NowPlayingTimelineProvider: TimelineProvider {
       postion: 0,
       duration: 0,
       lyrics: sharedDefaults?.string(forKey: "lyrics") ?? "",
-      lyricsIndex: sharedDefaults?.integer(forKey: "lyricsIndex") ?? 5,
+      lyricsIndex: sharedDefaults?.integer(forKey: "lyricsIndex") ?? 0,
       family: context.family
     )
   }
