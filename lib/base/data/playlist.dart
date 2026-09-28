@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:home_widget/home_widget.dart';
 import 'package:material_ui/material_ui.dart';
@@ -74,12 +75,42 @@ class PlaylistManager {
     for (final playlist in playlists) {
       await playlist.load();
     }
+    updateNowPlayingWidget();
   }
 
   Future<void> sync() async {
     await _prepareForSync();
     for (final playlist in playlists) {
       await playlist.sync();
+    }
+    updatePlaylistsWidget();
+  }
+
+  void updatePlaylistsWidget() async {
+    if (isMobile) {
+      await HomeWidget.saveWidgetData('playlistCount', playlists.length);
+
+      for (int i = 0; i < playlists.length; i++) {
+        final playlist = playlists[i];
+
+        final picturePath = playlist.picture?.path;
+
+        if (picturePath != null && picturePath.isNotEmpty) {
+          await loadPictureSafe(playlist.picture!);
+          final file = File(picturePath);
+
+          if (await file.exists()) {
+            await HomeWidget.saveFile('cover$i', await file.readAsBytes());
+          } else {
+            await HomeWidget.saveFile('cover$i', Uint8List(0));
+          }
+        } else {
+          await HomeWidget.saveFile('cover$i', Uint8List(0));
+        }
+
+        await HomeWidget.saveWidgetData('name$i', playlist.name);
+      }
+      await HomeWidget.updateWidget(iOSName: 'Playlists');
     }
   }
 
@@ -283,6 +314,7 @@ class Playlist {
     canModify = false;
     changeNotifier.value++;
     playlistManager.updateNotifier.value++;
+    playlistManager.updatePlaylistsWidget();
     layersManager.updateBackground();
 
     final songIds = songList.map((e) => e.id).toList();

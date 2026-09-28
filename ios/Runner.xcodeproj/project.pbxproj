@@ -23,6 +23,11 @@
 		BBAC5244306A7F900022EB10 /* NowPlayingExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BBAC5237306A7F8F0022EB10 /* NowPlayingExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BBAC524B306A7FA30022EB10 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = BBAC524A306A7FA30022EB10 /* FlutterGeneratedPluginSwiftPackage */; };
 		BBAC524D306A7FED0022EB10 /* AppIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3BF2CD3069441500027103 /* AppIntent.swift */; };
+		BBAC526B306A88E90022EB10 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB3BEC6D30689A2D00027103 /* WidgetKit.framework */; };
+		BBAC526C306A88E90022EB10 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB3BEC6F30689A2D00027103 /* SwiftUI.framework */; };
+		BBAC5277306A88EA0022EB10 /* PlaylistsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BBAC526A306A88E90022EB10 /* PlaylistsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BBAC527E306A88FB0022EB10 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = BBAC527D306A88FB0022EB10 /* FlutterGeneratedPluginSwiftPackage */; };
+		BBAC5280306A89140022EB10 /* AppIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3BF2CD3069441500027103 /* AppIntent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +44,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = BBAC5236306A7F8F0022EB10;
 			remoteInfo = NowPlayingExtension;
+		};
+		BBAC5275306A88EA0022EB10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BBAC5269306A88E90022EB10;
+			remoteInfo = PlaylistsExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -59,6 +71,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				BBAC5277306A88EA0022EB10 /* PlaylistsExtension.appex in Embed Foundation Extensions */,
 				BBAC5244306A7F900022EB10 /* NowPlayingExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -91,6 +104,8 @@
 		BB3BF2CD3069441500027103 /* AppIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIntent.swift; sourceTree = "<group>"; };
 		BBAC5237306A7F8F0022EB10 /* NowPlayingExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NowPlayingExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBAC524C306A7FB00022EB10 /* NowPlayingExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NowPlayingExtension.entitlements; sourceTree = "<group>"; };
+		BBAC526A306A88E90022EB10 /* PlaylistsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PlaylistsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBAC527F306A88FF0022EB10 /* PlaylistsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PlaylistsExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -101,10 +116,18 @@
 			);
 			target = BBAC5236306A7F8F0022EB10 /* NowPlayingExtension */;
 		};
+		BBAC527B306A88EA0022EB10 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BBAC5269306A88E90022EB10 /* PlaylistsExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BBAC523A306A7F8F0022EB10 /* NowPlaying */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (BBAC5248306A7F900022EB10 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = NowPlaying; sourceTree = "<group>"; };
+		BBAC526D306A88E90022EB10 /* Playlists */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (BBAC527B306A88EA0022EB10 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Playlists; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +157,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBAC5267306A88E90022EB10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBAC526C306A88E90022EB10 /* SwiftUI.framework in Frameworks */,
+				BBAC527E306A88FB0022EB10 /* FlutterGeneratedPluginSwiftPackage in Frameworks */,
+				BBAC526B306A88E90022EB10 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -160,11 +193,13 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				BBAC527F306A88FF0022EB10 /* PlaylistsExtension.entitlements */,
 				BBAC524C306A7FB00022EB10 /* NowPlayingExtension.entitlements */,
 				336F5DBC2FEE55EE00BF1EBD /* InfoPlist.strings */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				BBAC523A306A7F8F0022EB10 /* NowPlaying */,
+				BBAC526D306A88E90022EB10 /* Playlists */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				B1206488E028D97A627A736B /* Frameworks */,
@@ -177,6 +212,7 @@
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
 				BBAC5237306A7F8F0022EB10 /* NowPlayingExtension.appex */,
+				BBAC526A306A88E90022EB10 /* PlaylistsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -245,6 +281,7 @@
 			);
 			dependencies = (
 				BBAC5243306A7F900022EB10 /* PBXTargetDependency */,
+				BBAC5276306A88EA0022EB10 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -277,6 +314,29 @@
 			productReference = BBAC5237306A7F8F0022EB10 /* NowPlayingExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		BBAC5269306A88E90022EB10 /* PlaylistsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBAC527C306A88EA0022EB10 /* Build configuration list for PBXNativeTarget "PlaylistsExtension" */;
+			buildPhases = (
+				BBAC5266306A88E90022EB10 /* Sources */,
+				BBAC5267306A88E90022EB10 /* Frameworks */,
+				BBAC5268306A88E90022EB10 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BBAC526D306A88E90022EB10 /* Playlists */,
+			);
+			name = PlaylistsExtension;
+			packageProductDependencies = (
+				BBAC527D306A88FB0022EB10 /* FlutterGeneratedPluginSwiftPackage */,
+			);
+			productName = PlaylistsExtension;
+			productReference = BBAC526A306A88E90022EB10 /* PlaylistsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -297,6 +357,9 @@
 						LastSwiftMigration = 1100;
 					};
 					BBAC5236306A7F8F0022EB10 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					BBAC5269306A88E90022EB10 = {
 						CreatedOnToolsVersion = 27.0;
 					};
 				};
@@ -321,6 +384,7 @@
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
 				BBAC5236306A7F8F0022EB10 /* NowPlayingExtension */,
+				BBAC5269306A88E90022EB10 /* PlaylistsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -352,6 +416,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBAC5268306A88E90022EB10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -369,7 +440,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -384,7 +455,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -415,6 +486,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBAC5266306A88E90022EB10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBAC5280306A89140022EB10 /* AppIntent.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -427,6 +506,11 @@
 			isa = PBXTargetDependency;
 			target = BBAC5236306A7F8F0022EB10 /* NowPlayingExtension */;
 			targetProxy = BBAC5242306A7F900022EB10 /* PBXContainerItemProxy */;
+		};
+		BBAC5276306A88EA0022EB10 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BBAC5269306A88E90022EB10 /* PlaylistsExtension */;
+			targetProxy = BBAC5275306A88EA0022EB10 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -900,6 +984,138 @@
 			};
 			name = Profile;
 		};
+		BBAC5278306A88EA0022EB10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = PlaylistsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G8Y486G58G;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Playlists/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Playlists;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afalphy.sylvakru.Playlists;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BBAC5279306A88EA0022EB10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = PlaylistsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G8Y486G58G;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Playlists/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Playlists;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afalphy.sylvakru.Playlists;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BBAC527A306A88EA0022EB10 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = PlaylistsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G8Y486G58G;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Playlists/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Playlists;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afalphy.sylvakru.Playlists;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -943,6 +1159,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		BBAC527C306A88EA0022EB10 /* Build configuration list for PBXNativeTarget "PlaylistsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBAC5278306A88EA0022EB10 /* Debug */,
+				BBAC5279306A88EA0022EB10 /* Release */,
+				BBAC527A306A88EA0022EB10 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -958,6 +1184,10 @@
 			productName = FlutterGeneratedPluginSwiftPackage;
 		};
 		BBAC524A306A7FA30022EB10 /* FlutterGeneratedPluginSwiftPackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FlutterGeneratedPluginSwiftPackage;
+		};
+		BBAC527D306A88FB0022EB10 /* FlutterGeneratedPluginSwiftPackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FlutterGeneratedPluginSwiftPackage;
 		};

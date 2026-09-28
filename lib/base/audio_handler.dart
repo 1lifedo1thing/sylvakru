@@ -175,7 +175,12 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen((position) async {
-      if (isMobile && (isLoading || position < Duration.zero)) {
+      if (!isMobile) {
+        return;
+      }
+      if (currentSongNotifier.value == null ||
+          isLoading ||
+          position < Duration.zero) {
         return;
       }
 
@@ -720,6 +725,7 @@ class MyAudioHandler extends BaseAudioHandler {
         logger.output("widget save error: $error");
       }
       await updateNowPlayingWidget();
+      await HomeWidget.updateWidget(iOSName: 'Playlists');
     }
   }
 
@@ -803,6 +809,8 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void togglePlay() {
+    if (playQueue.isEmpty) return;
+
     if (isPlayingNotifier.value) {
       pause();
     } else {
