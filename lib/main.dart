@@ -52,11 +52,10 @@ Future<void> main() async {
   }
 
   await logger.init();
-  if (Platform.isIOS) {
-    await HomeWidget.setAppGroupId('group.com.afalphy.sylvakru');
-  }
+
   if (isMobile) {
     screenRadius = await CornerRadiusPlugin.init();
+    await HomeWidget.setAppGroupId('group.com.afalphy.sylvakru');
   } else {
     if (kReleaseMode) {
       await SingleInstance.start();

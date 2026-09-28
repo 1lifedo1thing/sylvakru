@@ -48,6 +48,14 @@ final volumeNotifier = ValueNotifier(0.3);
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
+Future<void> updateNowPlayingWidget() async {
+  await HomeWidget.updateWidget(
+    androidName: 'NowPlayingWidgetReceiver',
+    qualifiedAndroidName: 'com.afalphy.sylvakru.NowPlayingWidgetReceiver',
+    iOSName: 'widgets',
+  );
+}
+
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
   audioHandler = await AudioService.init(
@@ -167,7 +175,7 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen((position) async {
-      if (isLoading || position < Duration.zero) {
+      if (isMobile && (isLoading || position < Duration.zero)) {
         return;
       }
 
@@ -185,7 +193,7 @@ class MyAudioHandler extends BaseAudioHandler {
       if (current != _lyricsIndex) {
         _lyricsIndex = current;
         await HomeWidget.saveWidgetData('lyricsIndex', _lyricsIndex);
-        await HomeWidget.updateWidget(iOSName: 'widgets');
+        await updateNowPlayingWidget();
       }
     });
   }
@@ -203,9 +211,9 @@ class MyAudioHandler extends BaseAudioHandler {
       if (!windowIsClosed) {
         setupTaskbar();
       }
-    } else if (Platform.isIOS) {
+    } else if (isMobile) {
       await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
-      await HomeWidget.updateWidget(iOSName: 'widgets');
+      await updateNowPlayingWidget();
     }
   }
 
@@ -671,40 +679,47 @@ class MyAudioHandler extends BaseAudioHandler {
     if (start == null) {
       _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
     }
-    if (Platform.isIOS) {
-      await HomeWidget.saveWidgetData('title', getTitle(currentSong));
-      await HomeWidget.saveWidgetData('artist', getArtist(currentSong));
-      await HomeWidget.saveWidgetData('album', getAlbum(currentSong));
+    if (isMobile) {
+      try {
+        await HomeWidget.saveWidgetData('title', getTitle(currentSong));
+        await HomeWidget.saveWidgetData('artist', getArtist(currentSong));
+        await HomeWidget.saveWidgetData('album', getAlbum(currentSong));
 
-      await HomeWidget.saveFile(
-        'coverPath',
-        await File(currentSong.picture.path).readAsBytes(),
-      );
+        await HomeWidget.saveFile(
+          'coverPath',
+          await File(currentSong.picture.path).readAsBytes(),
+        );
 
-      await HomeWidget.saveWidgetData(
-        'coverColor',
-        currentCoverArtColor.toARGB32(),
-      );
+        await HomeWidget.saveWidgetData(
+          'coverColor',
+          currentCoverArtColor.toARGB32(),
+        );
 
-      await HomeWidget.saveWidgetData(
-        'foregroundColor',
-        contrastColorTheme.accent.toARGB32(),
-      );
+        await HomeWidget.saveWidgetData(
+          'foregroundColor',
+          contrastColorTheme.accent.toARGB32(),
+        );
 
-      await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
+        await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
 
-      await HomeWidget.saveWidgetData(
-        'is_favorite',
-        currentSong.isFavoriteNotifier.value,
-      );
+        await HomeWidget.saveWidgetData(
+          'is_favorite',
+          currentSong.isFavoriteNotifier.value,
+        );
 
-      await HomeWidget.saveWidgetData(
-        'lyrics',
-        currentSong.parsedLyrics?.lines.map((e) => e.text).toList().join('\n'),
-      );
+        await HomeWidget.saveWidgetData(
+          'lyrics',
+          currentSong.parsedLyrics?.lines
+              .map((e) => e.text)
+              .toList()
+              .join('\n'),
+        );
 
-      await HomeWidget.saveWidgetData('lyricsIndex', 0);
-      await HomeWidget.updateWidget(iOSName: 'widgets');
+        await HomeWidget.saveWidgetData('lyricsIndex', 0);
+      } catch (error) {
+        logger.output("widget save error: $error");
+      }
+      await updateNowPlayingWidget();
     }
   }
 

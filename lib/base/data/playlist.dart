@@ -315,11 +315,11 @@ void toggleFavoriteState(MyAudioMetadata song) async {
   } else {
     favorite.add([song]);
   }
-  if (Platform.isIOS && song == currentSongNotifier.value) {
+  if (isMobile && song == currentSongNotifier.value) {
     await HomeWidget.saveWidgetData(
       'is_favorite',
       currentSongNotifier.value!.isFavoriteNotifier.value,
     );
-    await HomeWidget.updateWidget(iOSName: 'widgets');
+    await updateNowPlayingWidget();
   }
 }

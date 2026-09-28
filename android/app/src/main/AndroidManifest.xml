@@ -51,6 +51,15 @@
             android:exported="true">
         </service>
 
+        <receiver android:name=".NowPlayingWidgetReceiver"
+                android:exported="true">
+        <intent-filter>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        </intent-filter>
+        <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_widget_glance_example" />
+        </receiver>
 
     </application>
 
@@ -60,5 +69,7 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
+
 
 </manifest>
