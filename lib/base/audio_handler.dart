@@ -113,6 +113,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
   bool isLoading = false;
 
+  int _lyricsIndex = 0;
+
   MyAudioHandler() {
     // avoid reading .lrc files
     (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
@@ -164,11 +166,28 @@ class MyAudioHandler extends BaseAudioHandler {
       layersManager.updateBackground();
     });
 
-    // _player.stream.position.listen((position) {
-    //   if (isLoading) {
-    //     return;
-    //   }
-    // });
+    _player.stream.position.listen((position) async {
+      if (isLoading || position < Duration.zero) {
+        return;
+      }
+
+      int current = -1;
+      final lines = currentSongNotifier.value!.parsedLyrics!.lines;
+      for (int i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        if (position < line.start) {
+          break;
+        }
+        if (current == -1 || line.start > lines[current].start) {
+          current = i;
+        }
+      }
+      if (current != _lyricsIndex) {
+        _lyricsIndex = current;
+        await HomeWidget.saveWidgetData('lyricsIndex', _lyricsIndex);
+        await HomeWidget.updateWidget(iOSName: 'widgets');
+      }
+    });
   }
 
   void updateIsPlaying(bool isPlaying) async {
@@ -669,7 +688,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
       await HomeWidget.saveWidgetData(
         'foregroundColor',
-        contrastColorTheme.regular.toARGB32(),
+        contrastColorTheme.accent.toARGB32(),
       );
 
       await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
@@ -679,6 +698,12 @@ class MyAudioHandler extends BaseAudioHandler {
         currentSong.isFavoriteNotifier.value,
       );
 
+      await HomeWidget.saveWidgetData(
+        'lyrics',
+        currentSong.parsedLyrics?.lines.map((e) => e.text).toList().join('\n'),
+      );
+
+      await HomeWidget.saveWidgetData('lyricsIndex', 0);
       await HomeWidget.updateWidget(iOSName: 'widgets');
     }
   }
