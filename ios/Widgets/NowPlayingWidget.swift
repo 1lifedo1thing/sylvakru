@@ -105,7 +105,7 @@ struct NowPlayingWidgetTimelineProvider: TimelineProvider {
       album: sharedDefaults?.string(forKey: "album") ?? "",
       coverPath: sharedDefaults?.string(forKey: "coverPath") ?? "",
       coverColor: sharedDefaults?.integer(forKey: "coverColor") ?? 0xFFFF_FFFF,
-      foregroundColor: sharedDefaults?.integer(forKey: "foregroundColor") ?? 0xFFFF_FFFF,
+      foregroundColor: sharedDefaults?.integer(forKey: "foregroundColor") ?? 0xFF00_0000,
       isPlaying: sharedDefaults?.bool(forKey: "is_playing") ?? false,
       isFavorite: sharedDefaults?.bool(forKey: "is_favorite") ?? false,
       postion: 0,

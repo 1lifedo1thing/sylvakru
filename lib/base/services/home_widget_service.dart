@@ -22,10 +22,14 @@ class HomeWidgetService {
   static Future<void> updateNowPlayingWidget() async {
     try {
       final song = currentSongNotifier.value;
-
-      await HomeWidget.saveWidgetData('title', getTitle(song));
-      await HomeWidget.saveWidgetData('artist', getArtist(song));
-      await HomeWidget.saveWidgetData('album', getAlbum(song));
+      if (song != null) {
+        await HomeWidget.saveWidgetData('title', getTitle(song));
+        await HomeWidget.saveWidgetData('artist', getArtist(song));
+        await HomeWidget.saveWidgetData('album', getAlbum(song));
+      } else {
+        // use placeholder
+        await HomeWidget.saveWidgetData('title', null);
+      }
 
       final pictureFile = File(song?.picture.path ?? '');
 
