@@ -507,8 +507,10 @@ class _SettingsListState extends State<SettingsList> {
         if (await showConfirmDialog(context, l10n.clear)) {
           showCenterLoading();
           layersManager.clearDataLayers();
+          audioHandler.clear();
           await library.clearCache();
           await library.clearPicture();
+          await library.clearLrcCache();
           playlistManager.updateNotifier.value++;
           removeCenterLoading();
         }
