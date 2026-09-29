@@ -99,17 +99,16 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   }
 
   if (sourceType == .navidrome || sourceType == .feiniu) {
-    final lyrics = await streamClient?.getLyricsById(song.id) ?? '';
-    if (sourceType == .feiniu &&
-        lyrics.trim().isNotEmpty &&
-        !RegExp(
-          r'^[\[<]\d{2}:\d{2}[.:]\d{2,3}[\]>]',
-          multiLine: true,
-        ).hasMatch(lyrics)) {
-      // 没有时间标签的歌词按原文显示，不生成虚假的同步时间。
-      result.lines.add(LyricLine(Duration.zero, lyrics.trim(), []));
-      return;
+    String lyrics;
+    final lycFile = File(song.lrcPath!);
+    if (await lycFile.exists()) {
+      lyrics = await File(song.lrcPath!).readAsString();
+    } else {
+      lyrics = await streamClient?.getLyricsById(song.id) ?? '';
+      await lycFile.create(recursive: true);
+      await lycFile.writeAsString(lyrics);
     }
+
     lines = lyrics.split(RegExp(r'[\n]'));
   } else {
     if (song.lyrics == null || song.lyrics!.isEmpty) {
@@ -118,8 +117,13 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
 
       late File lrcFile;
       if (sourceType == .webdav) {
-        lrcFile = File('${tmpDir.path}/sylvakru_lyric');
-        await webdavClient?.download(remotePath: path, localPath: lrcFile.path);
+        lrcFile = File(song.lrcPath!);
+        if (!await lrcFile.exists()) {
+          await webdavClient?.download(
+            remotePath: path,
+            localPath: lrcFile.path,
+          );
+        }
       } else {
         lrcFile = File(path);
       }

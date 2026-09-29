@@ -4,11 +4,11 @@ import 'dart:math' as math;
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/data/playlist.dart';
+import 'package:sylvakru/base/services/home_widget_service.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
@@ -48,13 +48,7 @@ final volumeNotifier = ValueNotifier(0.3);
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
-Future<void> updateNowPlayingWidget() async {
-  await HomeWidget.updateWidget(
-    androidName: 'NowPlayingWidgetReceiver',
-    qualifiedAndroidName: 'com.afalphy.sylvakru.NowPlayingWidgetReceiver',
-    iOSName: 'NowPlaying',
-  );
-}
+final currentLyricsIndexNotifier = ValueNotifier(-1);
 
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
@@ -82,7 +76,7 @@ Future<void> initAudioService() async {
     }
   });
 
-  if (Platform.isIOS) {
+  if (isMobile) {
     const channel = MethodChannel('com.afalphy.audio_control');
 
     channel.setMethodCallHandler((call) async {
@@ -92,10 +86,20 @@ Future<void> initAudioService() async {
             toggleFavoriteState(currentSongNotifier.value!);
           }
         case 'skipToPrevious':
+          // wake up app
+          if (isPlayingNotifier.value == false) {
+            audioHandler.play();
+          }
+
           audioHandler.skipToPrevious();
         case 'togglePlay':
           audioHandler.togglePlay();
         case 'skipToNext':
+          // wake up app
+          if (isPlayingNotifier.value == false) {
+            audioHandler.play();
+          }
+
           audioHandler.skipToNext();
         default:
       }
@@ -118,10 +122,6 @@ class MyAudioHandler extends BaseAudioHandler {
   late File _positionState;
 
   Timer? _positionTimer;
-
-  bool isLoading = false;
-
-  int _lyricsIndex = 0;
 
   MyAudioHandler() {
     // avoid reading .lrc files
@@ -175,17 +175,21 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen((position) async {
-      if (!isMobile) {
+      if (currentSongNotifier.value == null ||
+          position < Duration.zero ||
+          currentSongNotifier.value!.parsedLyrics == null) {
         return;
       }
-      if (currentSongNotifier.value == null ||
-          isLoading ||
-          position < Duration.zero) {
+      int tmp = currentLyricsIndexNotifier.value;
+      final lines = currentSongNotifier.value!.parsedLyrics!.lines;
+      if (tmp + 1 >= lines.length ||
+          (tmp >= 0 &&
+              position >= lines[tmp].start &&
+              position <= lines[tmp + 1].start)) {
         return;
       }
 
       int current = -1;
-      final lines = currentSongNotifier.value!.parsedLyrics!.lines;
       for (int i = 0; i < lines.length; i++) {
         final line = lines[i];
         if (position < line.start) {
@@ -195,10 +199,12 @@ class MyAudioHandler extends BaseAudioHandler {
           current = i;
         }
       }
-      if (current != _lyricsIndex) {
-        _lyricsIndex = current;
-        await HomeWidget.saveWidgetData('lyricsIndex', _lyricsIndex);
-        await updateNowPlayingWidget();
+
+      if (current != currentLyricsIndexNotifier.value) {
+        currentLyricsIndexNotifier.value = current;
+        if (isMobile) {
+          HomeWidgetService.updateLyricsIndex();
+        }
       }
     });
   }
@@ -217,8 +223,7 @@ class MyAudioHandler extends BaseAudioHandler {
         setupTaskbar();
       }
     } else if (isMobile) {
-      await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
-      await updateNowPlayingWidget();
+      HomeWidgetService.updateIsPlaying();
     }
   }
 
@@ -532,7 +537,6 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void justClear() {
-    isLoading = false;
     _player.stop();
     updateIsPlaying(false);
     updatePlaybackState(stop: true);
@@ -601,23 +605,11 @@ class MyAudioHandler extends BaseAudioHandler {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
       }
 
-      int durationSeconds = getDuration(currentSongNotifier.value).inSeconds;
-      // fix wrong duration
-      if (durationSeconds <= 0) {
-        durationSeconds = _player.state.duration.inSeconds;
-        if (durationSeconds > 0 && isNotStreamSource) {
-          await library.updateDuration(
-            currentSongNotifier.value!,
-            _player.state.duration,
-          );
-        }
-      }
-      if (durationSeconds > 0) {
-        double times = _playedDuration.inSeconds / durationSeconds;
-        if (times > 0.5) {
-          library.tryAddCache(currentSongNotifier.value!);
-          history.addSongTimes(currentSongNotifier.value!, times.round());
-        }
+      double times =
+          _playedDuration.inSeconds / _player.state.duration.inSeconds;
+      if (times > 0.5) {
+        library.tryAddCache(currentSongNotifier.value!);
+        history.addSongTimes(currentSongNotifier.value!, times.round());
       }
     }
     _playLastSyncTime = null;
@@ -628,11 +620,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
     final currentSong = playQueue[currentIndex];
 
-    await _setLyricsAndUpdateColors(currentSong);
-
-    currentSongNotifier.value = currentSong;
-
-    isLoading = true;
     try {
       if (currentSong.cacheExist) {
         await _player.open(
@@ -675,7 +662,6 @@ class MyAudioHandler extends BaseAudioHandler {
       stop();
       logger.output("[${currentSong.title}] $error");
     }
-    isLoading = false;
 
     updateServiceMediaItem(currentSong);
 
@@ -684,48 +670,17 @@ class MyAudioHandler extends BaseAudioHandler {
     if (start == null) {
       _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
     }
+
+    await _setLyricsAndUpdateColors(currentSong);
+
+    currentSongNotifier.value = currentSong;
+
+    currentLyricsIndexNotifier.value = -1;
+
     if (isMobile) {
-      try {
-        await HomeWidget.saveWidgetData('title', getTitle(currentSong));
-        await HomeWidget.saveWidgetData('artist', getArtist(currentSong));
-        await HomeWidget.saveWidgetData('album', getAlbum(currentSong));
-
-        await HomeWidget.saveFile(
-          'coverPath',
-          await File(currentSong.picture.path).readAsBytes(),
-        );
-
-        await HomeWidget.saveWidgetData(
-          'coverColor',
-          currentCoverArtColor.toARGB32(),
-        );
-
-        await HomeWidget.saveWidgetData(
-          'foregroundColor',
-          contrastColorTheme.accent.toARGB32(),
-        );
-
-        await HomeWidget.saveWidgetData('is_playing', isPlayingNotifier.value);
-
-        await HomeWidget.saveWidgetData(
-          'is_favorite',
-          currentSong.isFavoriteNotifier.value,
-        );
-
-        await HomeWidget.saveWidgetData(
-          'lyrics',
-          currentSong.parsedLyrics?.lines
-              .map((e) => e.text)
-              .toList()
-              .join('\n'),
-        );
-
-        await HomeWidget.saveWidgetData('lyricsIndex', 0);
-      } catch (error) {
-        logger.output("widget save error: $error");
-      }
-      await updateNowPlayingWidget();
-      await HomeWidget.updateWidget(iOSName: 'Playlists');
+      HomeWidgetService.updateNowPlayingWidget();
+      // update colors
+      HomeWidgetService.reloadPlaylistsWidget();
     }
   }
 
@@ -773,7 +728,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> stop() async {
-    isLoading = false;
     _player.stop();
     updateIsPlaying(false);
     updatePlaybackState(stop: true);

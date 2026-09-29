@@ -28,6 +28,8 @@ class MyAudioMetadata {
   bool cacheExist = false;
   String? cachePath;
 
+  String? lrcPath;
+
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
 
@@ -53,6 +55,7 @@ class MyAudioMetadata {
     if (sourceType != .local) {
       cachePath = '${getCachesPath(sourceType)}/$md5Hash';
       cacheExist = File(cachePath!).existsSync();
+      lrcPath = '${getLrcPath(sourceType)}/$md5Hash';
     }
 
     compareTitle = PinyinHelper.getPinyinE(getTitle(this));

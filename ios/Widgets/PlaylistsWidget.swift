@@ -3,20 +3,6 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-// MARK: - App Group Storage
-
-extension Color {
-  init(argb: Int) {
-    self.init(
-      .sRGB,
-      red: Double((argb >> 16) & 0xFF) / 255,
-      green: Double((argb >> 8) & 0xFF) / 255,
-      blue: Double(argb & 0xFF) / 255,
-      opacity: Double((argb >> 24) & 0xFF) / 255
-    )
-  }
-}
-
 private let appGroupIdentifier =
   "group.com.afalphy.sylvakru"
 
@@ -24,6 +10,25 @@ private let widgetDefaults =
   UserDefaults(
     suiteName: appGroupIdentifier
   )
+
+// Same color scheme as the NowPlaying widget: the contrast color computed
+// from the current cover, shared via the "foregroundColor" key.
+private var widgetForegroundColor: Color {
+  widgetColor("foregroundColor", default: 0xFF00_0000)
+}
+
+// integer(forKey:) returns 0 for missing keys, which renders as a fully
+// transparent color on a fresh install; treat missing as "no data yet".
+private func widgetColor(
+  _ key: String,
+  default defaultColor: Int
+) -> Color {
+  Color(
+    argb: widgetDefaults?.object(
+      forKey: key
+    ) as? Int ?? defaultColor
+  )
+}
 
 private func widgetFilePath(
   _ name: String
@@ -299,7 +304,7 @@ private func totalPages(
 
 // MARK: - Timeline Entry
 
-struct PlaylistsEntry: TimelineEntry {
+struct PlaylistsWidgetEntry: TimelineEntry {
 
   let date: Date
 
@@ -312,18 +317,18 @@ struct PlaylistsEntry: TimelineEntry {
 
 // MARK: - Timeline Provider
 
-struct Provider: TimelineProvider {
+struct PlaylistsWidgetTimelineProvider: TimelineProvider {
 
   func placeholder(
     in context: Context
-  ) -> PlaylistsEntry {
+  ) -> PlaylistsWidgetEntry {
 
     let count =
       itemsPerPage(
         for: context.family
       )
 
-    return PlaylistsEntry(
+    return PlaylistsWidgetEntry(
       date: Date(),
 
       coverPaths: Array(
@@ -332,7 +337,7 @@ struct Provider: TimelineProvider {
       ),
 
       playlistNames: Array(
-        repeating: "Playlist",
+        repeating: String(localized: "Playlist"),
         count: count
       ),
 
@@ -344,7 +349,7 @@ struct Provider: TimelineProvider {
     in context: Context,
     completion:
       @escaping (
-        PlaylistsEntry
+        PlaylistsWidgetEntry
       ) -> Void
   ) {
 
@@ -359,11 +364,26 @@ struct Provider: TimelineProvider {
     in context: Context,
     completion:
       @escaping (
-        Timeline<PlaylistsEntry>
+        Timeline<PlaylistsWidgetEntry>
       ) -> Void
   ) {
 
     // MARK: Read playlist data
+
+    // Fresh install: nothing synced yet — render the placeholder instead of
+    // a blank widget until the first playlist data arrives.
+
+    if widgetDefaults?.object(forKey: "playlistCount") == nil {
+
+      completion(
+        Timeline(
+          entries: [placeholder(in: context)],
+          policy: .never
+        )
+      )
+
+      return
+    }
 
     let count =
       widgetDefaults?.integer(
@@ -431,7 +451,7 @@ struct Provider: TimelineProvider {
     }
 
     let entry =
-      PlaylistsEntry(
+      PlaylistsWidgetEntry(
         date: Date(),
         coverPaths: coverPaths,
         playlistNames: playlistNames,
@@ -441,7 +461,7 @@ struct Provider: TimelineProvider {
     let timeline =
       Timeline(
         entries: [entry],
-        policy: .atEnd
+        policy: .never
       )
 
     completion(
@@ -534,7 +554,7 @@ struct ChangePageIntent: AppIntent {
 
 struct PlaylistsWidgetEntryView: View {
 
-  let entry: PlaylistsEntry
+  let entry: PlaylistsWidgetEntry
 
   var body: some View {
 
@@ -585,7 +605,7 @@ struct PlaylistsWidgetEntryView: View {
             .caption
           )
           .foregroundColor(
-            .secondary
+            widgetForegroundColor.opacity(0.5)
           )
         }
 
@@ -598,12 +618,12 @@ struct PlaylistsWidgetEntryView: View {
           .caption
         )
         .foregroundColor(
-          .secondary
+          widgetForegroundColor.opacity(0.5)
         )
       }
     }
     .containerBackground(
-      Color(argb: widgetDefaults?.integer(forKey: "coverColor") ?? 0xFFFF_FFFF),
+      widgetColor("coverColor", default: 0xFFFF_FFFF),
       for: .widget
     )
   }
@@ -613,7 +633,7 @@ struct PlaylistsWidgetEntryView: View {
 
 struct GridView: View {
 
-  let entry: PlaylistsEntry
+  let entry: PlaylistsWidgetEntry
 
   let columns: Int
 
@@ -724,7 +744,7 @@ struct GridView: View {
             .caption
           )
           .foregroundColor(
-            .secondary
+            widgetForegroundColor.opacity(0.5)
           )
 
           Spacer()
@@ -759,13 +779,16 @@ struct GridView: View {
                 currentNames.indices
                   .contains(index)
                   ? currentNames[index]
-                  : "Unknown"
+                  : String(localized: "Unknown")
               )
               .font(
                 .system(
                   size: 10,
                   weight: .medium
                 )
+              )
+              .foregroundColor(
+                widgetForegroundColor
               )
               .lineLimit(1)
             }
@@ -866,7 +889,7 @@ struct GridView: View {
         cornerRadius: 6
       )
       .fill(
-        Color.gray.opacity(0.25)
+        widgetForegroundColor.opacity(0.25)
       )
       .aspectRatio(
         1,
@@ -879,7 +902,7 @@ struct GridView: View {
             "music.note.list"
         )
         .foregroundColor(
-          .secondary
+          widgetForegroundColor.opacity(0.5)
         )
         .font(
           .system(size: 14)
@@ -979,23 +1002,23 @@ struct GridView: View {
       Image(
         systemName:
           direction == .previous
-          ? "chevron.left"
-          : "chevron.right"
+          ? "arrowtriangle.left.fill"
+          : "arrowtriangle.right.fill"
       )
       .font(
         .system(
           size: 16,
-          weight: .bold
+          weight: .medium
         )
+      )
+      .foregroundColor(
+        disabled
+          ? widgetForegroundColor.opacity(0.3)
+          : widgetForegroundColor
       )
     }
     .buttonStyle(
       .plain
-    )
-    .tint(
-      disabled
-        ? .gray.opacity(0.3)
-        : .accentColor
     )
   }
 
@@ -1007,7 +1030,7 @@ struct GridView: View {
   ) -> some View {
 
     HStack(
-      spacing: 4
+      spacing: 5
     ) {
 
       ForEach(
@@ -1018,12 +1041,12 @@ struct GridView: View {
         Circle()
           .fill(
             page == currentPage
-              ? Color.accentColor
-              : Color.gray.opacity(0.3)
+              ? widgetForegroundColor
+              : widgetForegroundColor.opacity(0.3)
           )
           .frame(
-            width: 4.5,
-            height: 4.5
+            width: 6,
+            height: 6
           )
       }
     }
@@ -1032,16 +1055,16 @@ struct GridView: View {
 
 // MARK: - Widget Configuration
 
-struct Playlists: Widget {
+struct PlaylistsWidget: Widget {
 
   let kind: String =
-    "Playlists"
+    "PlaylistsWidget"
 
   var body: some WidgetConfiguration {
 
     StaticConfiguration(
       kind: kind,
-      provider: Provider()
+      provider: PlaylistsWidgetTimelineProvider()
     ) { entry in
 
       PlaylistsWidgetEntryView(
@@ -1049,10 +1072,12 @@ struct Playlists: Widget {
       )
     }
     .configurationDisplayName(
-      "My Playlists"
+      LocalizedStringResource("My Playlists")
     )
     .description(
-      "Displays your music playlists with multi-size support and pagination."
+      LocalizedStringResource(
+        "Displays your music playlists with multi-size support and pagination."
+      )
     )
     .supportedFamilies(
       supportedFamilies

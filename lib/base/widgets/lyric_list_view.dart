@@ -35,47 +35,24 @@ class LyricsListView extends StatefulWidget {
 class LyricsListViewState extends State<LyricsListView>
     with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
-  final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
-  StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
-  bool userDragged = false;
 
   List<LyricLine> lines = [];
   bool jump = true;
   Timer? timer;
 
-  void scroll2CurrentIndex(Duration position) async {
-    position += Duration(milliseconds: lyricsTimeOffsetNotifier.value);
-    // it's weird that the position is sometimes negative
-    if (audioHandler.isLoading || position < Duration.zero) {
-      return;
-    }
-    int tmp = currentIndexNotifier.value;
-    int current = -1;
-
-    for (int i = 0; i < lines.length; i++) {
-      final line = lines[i];
-      if (position < line.start) {
-        break;
-      }
-      if (current == -1 || line.start > lines[current].start) {
-        current = i;
-      }
-    }
-    currentIndexNotifier.value = current;
-
-    if (!userDragging && (tmp != current || userDragged)) {
-      userDragged = false;
-
+  void scroll2CurrentIndex() async {
+    final currentIndex = currentLyricsIndexNotifier.value;
+    if (!userDragging) {
       if (itemScrollController.isAttached) {
         if (jump) {
           itemScrollController.jumpTo(
-            index: current + 1,
+            index: currentIndex + 1,
             alignment: widget.expanded ? 0.25 : 0.4,
           );
         } else {
           itemScrollController.scrollTo(
-            index: current + 1,
+            index: currentIndex + 1,
             duration: Duration(milliseconds: 300), // smooth animation
             curve: Curves.fastOutSlowIn,
             alignment: widget.expanded ? 0.25 : 0.4,
@@ -91,18 +68,13 @@ class LyricsListViewState extends State<LyricsListView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     lines = widget.lines;
-    scroll2CurrentIndex(audioHandler.getPosition());
-    positionSub = audioHandler.getPositionStream().listen(
-      (position) => scroll2CurrentIndex(position),
-    );
+    currentLyricsIndexNotifier.addListener(scroll2CurrentIndex);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // Stop listening when lyrics page is closed
-    positionSub?.cancel();
-    positionSub = null;
+    currentLyricsIndexNotifier.removeListener(scroll2CurrentIndex);
 
     timer?.cancel();
     timer = null;
@@ -113,17 +85,12 @@ class LyricsListViewState extends State<LyricsListView>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (positionSub == null) {
-          jump = true;
-          scroll2CurrentIndex(audioHandler.getPosition());
-          positionSub = audioHandler.getPositionStream().listen(
-            (position) => scroll2CurrentIndex(position),
-          );
-        }
+        jump = true;
+        scroll2CurrentIndex();
+        currentLyricsIndexNotifier.addListener(scroll2CurrentIndex);
         break;
       case AppLifecycleState.paused:
-        positionSub?.cancel();
-        positionSub = null;
+        currentLyricsIndexNotifier.removeListener(scroll2CurrentIndex);
         break;
       default:
         break;
@@ -134,12 +101,12 @@ class LyricsListViewState extends State<LyricsListView>
   Widget build(BuildContext context) {
     // scrolling to current index while resizing
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (currentIndexNotifier.value == -1) {
+      if (currentLyricsIndexNotifier.value == -1) {
         return;
       }
       if (itemScrollController.isAttached) {
         itemScrollController.jumpTo(
-          index: currentIndexNotifier.value + 1,
+          index: currentLyricsIndexNotifier.value + 1,
           alignment: widget.expanded ? 0.25 : 0.4,
         );
       }
@@ -156,7 +123,6 @@ class LyricsListViewState extends State<LyricsListView>
             } else {
               timer ??= Timer(const Duration(milliseconds: 2000), () {
                 userDragging = false;
-                userDragged = true;
                 timer = null;
               });
             }
@@ -183,7 +149,6 @@ class LyricsListViewState extends State<LyricsListView>
               return LyricLineWidget(
                 index: index - 1,
                 line: lines[index - 1],
-                currentIndexNotifier: currentIndexNotifier,
                 expanded: widget.expanded,
                 isKaraoke: widget.isKaraoke,
               );
@@ -199,7 +164,6 @@ class LyricsListViewState extends State<LyricsListView>
 class LyricLineWidget extends StatelessWidget {
   final int index;
   final LyricLine line;
-  final ValueNotifier<int> currentIndexNotifier;
   final bool expanded;
   final bool isKaraoke;
 
@@ -207,7 +171,6 @@ class LyricLineWidget extends StatelessWidget {
     super.key,
     required this.line,
     required this.index,
-    required this.currentIndexNotifier,
     required this.expanded,
     required this.isKaraoke,
   });
@@ -245,10 +208,10 @@ class LyricLineWidget extends StatelessWidget {
             listenable: Listenable.merge([
               lyricsFontSizeOffsetNotifier,
               lyricsFontWeightNotifier,
-              currentIndexNotifier,
+              currentLyricsIndexNotifier,
             ]),
             builder: (context, _) {
-              final isCurrent = currentIndexNotifier.value == index;
+              final isCurrent = currentLyricsIndexNotifier.value == index;
 
               double fontSize = 16 + lyricsFontSizeOffsetNotifier.value;
 

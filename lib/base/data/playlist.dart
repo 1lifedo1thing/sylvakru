@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:home_widget/home_widget.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/services/home_widget_service.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
@@ -75,7 +74,10 @@ class PlaylistManager {
     for (final playlist in playlists) {
       await playlist.load();
     }
-    updateNowPlayingWidget();
+
+    if (isMobile) {
+      HomeWidgetService.updatePlaylistsWidget();
+    }
   }
 
   Future<void> sync() async {
@@ -83,34 +85,9 @@ class PlaylistManager {
     for (final playlist in playlists) {
       await playlist.sync();
     }
-    updatePlaylistsWidget();
-  }
 
-  void updatePlaylistsWidget() async {
     if (isMobile) {
-      await HomeWidget.saveWidgetData('playlistCount', playlists.length);
-
-      for (int i = 0; i < playlists.length; i++) {
-        final playlist = playlists[i];
-
-        final picturePath = playlist.picture?.path;
-
-        if (picturePath != null && picturePath.isNotEmpty) {
-          await loadPictureSafe(playlist.picture!);
-          final file = File(picturePath);
-
-          if (await file.exists()) {
-            await HomeWidget.saveFile('cover$i', await file.readAsBytes());
-          } else {
-            await HomeWidget.saveFile('cover$i', Uint8List(0));
-          }
-        } else {
-          await HomeWidget.saveFile('cover$i', Uint8List(0));
-        }
-
-        await HomeWidget.saveWidgetData('name$i', playlist.name);
-      }
-      await HomeWidget.updateWidget(iOSName: 'Playlists');
+      HomeWidgetService.updatePlaylistsWidget();
     }
   }
 
@@ -150,6 +127,10 @@ class PlaylistManager {
     addPlaylist(playlist);
 
     update();
+
+    if (isMobile) {
+      HomeWidgetService.updatePlaylistsWidget();
+    }
   }
 
   Future<void> deletePlaylist(Playlist playlist) async {
@@ -166,6 +147,10 @@ class PlaylistManager {
     playlistMap.remove(playlist.name);
 
     update();
+
+    if (isMobile) {
+      HomeWidgetService.updatePlaylistsWidget();
+    }
   }
 
   void update() {
@@ -314,7 +299,9 @@ class Playlist {
     canModify = false;
     changeNotifier.value++;
     playlistManager.updateNotifier.value++;
-    playlistManager.updatePlaylistsWidget();
+
+    HomeWidgetService.updatePlaylistsWidget();
+
     layersManager.updateBackground();
 
     final songIds = songList.map((e) => e.id).toList();
@@ -348,10 +335,6 @@ void toggleFavoriteState(MyAudioMetadata song) async {
     favorite.add([song]);
   }
   if (isMobile && song == currentSongNotifier.value) {
-    await HomeWidget.saveWidgetData(
-      'is_favorite',
-      currentSongNotifier.value!.isFavoriteNotifier.value,
-    );
-    await updateNowPlayingWidget();
+    HomeWidgetService.updateIsFavorite();
   }
 }
