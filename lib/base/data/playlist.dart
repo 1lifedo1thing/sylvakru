@@ -75,7 +75,7 @@ class PlaylistManager {
       await playlist.load();
     }
 
-    if (isMobile) {
+    if (Platform.isIOS) {
       HomeWidgetService.updatePlaylistsWidget();
     }
   }
@@ -86,7 +86,7 @@ class PlaylistManager {
       await playlist.sync();
     }
 
-    if (isMobile) {
+    if (Platform.isIOS) {
       HomeWidgetService.updatePlaylistsWidget();
     }
   }
@@ -128,7 +128,7 @@ class PlaylistManager {
 
     update();
 
-    if (isMobile) {
+    if (Platform.isIOS) {
       HomeWidgetService.updatePlaylistsWidget();
     }
   }
@@ -148,7 +148,7 @@ class PlaylistManager {
 
     update();
 
-    if (isMobile) {
+    if (Platform.isIOS) {
       HomeWidgetService.updatePlaylistsWidget();
     }
   }
@@ -300,7 +300,9 @@ class Playlist {
     changeNotifier.value++;
     playlistManager.updateNotifier.value++;
 
-    HomeWidgetService.updatePlaylistsWidget();
+    if (Platform.isIOS) {
+      HomeWidgetService.updatePlaylistsWidget();
+    }
 
     layersManager.updateBackground();
 
@@ -334,7 +336,7 @@ void toggleFavoriteState(MyAudioMetadata song) async {
   } else {
     favorite.add([song]);
   }
-  if (isMobile && song == currentSongNotifier.value) {
+  if (Platform.isIOS && song == currentSongNotifier.value) {
     HomeWidgetService.updateIsFavorite();
   }
 }

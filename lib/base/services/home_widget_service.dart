@@ -12,19 +12,11 @@ import 'package:sylvakru/base/utils/metadata_utils.dart';
 
 class HomeWidgetService {
   static Future<void> reloadNowPlayingWidget() async {
-    await HomeWidget.updateWidget(
-      androidName: 'NowPlayingWidgetReceiver',
-      qualifiedAndroidName: 'com.afalphy.sylvakru.NowPlayingWidgetReceiver',
-      iOSName: 'NowPlayingWidget',
-    );
+    await HomeWidget.updateWidget(iOSName: 'NowPlayingWidget');
   }
 
   static Future<void> reloadPlaylistsWidget() async {
-    await HomeWidget.updateWidget(
-      androidName: 'PlaylistsWidgetReceiver',
-      qualifiedAndroidName: 'com.afalphy.sylvakru.PlaylistsWidgetReceiver',
-      iOSName: 'PlaylistsWidget',
-    );
+    await HomeWidget.updateWidget(iOSName: 'PlaylistsWidget');
   }
 
   static Future<void> updateNowPlayingWidget() async {
