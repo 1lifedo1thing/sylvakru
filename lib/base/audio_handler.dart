@@ -534,6 +534,11 @@ class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = null;
     currentCoverArtColor = Colors.grey;
     saveAllStates();
+
+    if (isMobile) {
+      HomeWidgetService.updateNowPlayingWidget();
+      HomeWidgetService.reloadPlaylistsWidget();
+    }
   }
 
   void justClear() {
@@ -548,6 +553,11 @@ class MyAudioHandler extends BaseAudioHandler {
     currentIndex = -1;
     currentSongNotifier.value = null;
     currentCoverArtColor = Colors.grey;
+
+    if (isMobile) {
+      HomeWidgetService.updateNowPlayingWidget();
+      HomeWidgetService.reloadPlaylistsWidget();
+    }
   }
 
   List<MyAudioMetadata> getNewQueue(List<MyAudioMetadata> oldQueue) {
