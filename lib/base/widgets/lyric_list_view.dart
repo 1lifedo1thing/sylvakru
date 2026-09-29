@@ -12,7 +12,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 final lyricsFontSizeOffsetNotifier = ValueNotifier(0.0);
-final lyricsTimeOffsetNotifier = ValueNotifier(0);
 final lyricsFontWeightNotifier = ValueNotifier(FontWeight.bold);
 
 final updateLyricsNotifier = ValueNotifier(0);
@@ -365,7 +364,9 @@ class KaraokeTextState extends State<KaraokeText>
     double progress;
     final position =
         displayPosition +
-        Duration(milliseconds: lyricsTimeOffsetNotifier.value);
+        Duration(
+          milliseconds: currentSongNotifier.value?.lyricsTimeOffset ?? 0,
+        );
     if (position <= start) {
       progress = 0;
     } else if (position >= end!) {

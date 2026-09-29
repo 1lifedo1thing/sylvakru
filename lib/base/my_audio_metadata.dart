@@ -40,6 +40,8 @@ class MyAudioMetadata {
   late String compareArtist;
   late String compareAlbum;
 
+  int lyricsTimeOffset;
+
   MyAudioMetadata(
     this._audioMetadata, {
     required this.id,
@@ -48,6 +50,7 @@ class MyAudioMetadata {
     this.modified,
     this.playCount = 0,
     this.lastPlayed,
+    this.lyricsTimeOffset = 0,
   }) {
     picture = MyPicture.form(isStreamSource ? coverId ?? id : path!);
 

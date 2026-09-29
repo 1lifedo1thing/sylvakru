@@ -275,15 +275,13 @@ class Library {
     );
   }
 
-  Future<void> updateDuration(MyAudioMetadata song, Duration duration) async {
+  Future<void> updateLyricsTimeOffset(MyAudioMetadata song) async {
     final db = _metadataDB!;
     await (db.update(
       db.metadataItems,
     )..where((t) => t.id.equals(song.id))).write(
-      MetadataItemsCompanion(duration: Value(duration.inMilliseconds)),
+      MetadataItemsCompanion(lyricsTimeOffset: Value(song.lyricsTimeOffset)),
     );
-    song.duration = duration;
-    song.updateNotifier.value++;
   }
 
   Future<void> updateMetadata(MyAudioMetadata song) async {

@@ -35,6 +35,8 @@ class MetadataItems extends Table {
 
   IntColumn get lastPlayed => integer().nullable()();
 
+  IntColumn get lyricsTimeOffset => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -44,7 +46,7 @@ class MetadataDB extends _$MetadataDB {
   MetadataDB(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -63,6 +65,10 @@ class MetadataDB extends _$MetadataDB {
 
         if (from < 4) {
           await m.addColumn(metadataItems, metadataItems.coverId);
+        }
+
+        if (from < 5) {
+          await m.addColumn(metadataItems, metadataItems.lyricsTimeOffset);
         }
       },
     );

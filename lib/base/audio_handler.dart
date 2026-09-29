@@ -177,13 +177,16 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen((position) async {
-      if (currentSongNotifier.value == null ||
+      final currentSong = currentSongNotifier.value;
+      if (currentSong == null ||
           position < Duration.zero ||
           currentSongNotifier.value!.parsedLyrics == null) {
         return;
       }
       int tmp = currentLyricsIndexNotifier.value;
-      final lines = currentSongNotifier.value!.parsedLyrics!.lines;
+      final lines = currentSong.parsedLyrics!.lines;
+
+      position += Duration(milliseconds: currentSong.lyricsTimeOffset);
 
       if (tmp >= 0 &&
           tmp + 1 < lines.length &&
@@ -211,10 +214,7 @@ class MyAudioHandler extends BaseAudioHandler {
         currentLyricsIndexNotifier.value = current;
 
         if (controlCenterLyricsNotifier.value) {
-          updateServiceMediaItem(
-            currentSongNotifier.value!,
-            lyric: lines[current].text,
-          );
+          updateServiceMediaItem(currentSong, lyric: lines[current].text);
           updatePlaybackState();
         }
 
