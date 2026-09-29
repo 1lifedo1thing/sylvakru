@@ -104,12 +104,8 @@ class LyricsListViewState extends State<LyricsListView>
       if (currentLyricsIndexNotifier.value == -1) {
         return;
       }
-      if (itemScrollController.isAttached) {
-        itemScrollController.jumpTo(
-          index: currentLyricsIndexNotifier.value + 1,
-          alignment: widget.expanded ? 0.25 : 0.4,
-        );
-      }
+      jump = true;
+      scroll2CurrentIndex();
     });
     return LayoutBuilder(
       builder: (context, constraints) {

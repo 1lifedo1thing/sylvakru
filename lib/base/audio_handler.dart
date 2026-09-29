@@ -184,21 +184,26 @@ class MyAudioHandler extends BaseAudioHandler {
       }
       int tmp = currentLyricsIndexNotifier.value;
       final lines = currentSongNotifier.value!.parsedLyrics!.lines;
-      if (tmp + 1 >= lines.length ||
-          (tmp >= 0 &&
-              position >= lines[tmp].start &&
-              position <= lines[tmp + 1].start)) {
+
+      if (tmp >= 0 &&
+          tmp + 1 < lines.length &&
+          position >= lines[tmp].start &&
+          position <= lines[tmp + 1].start) {
         return;
       }
 
       int current = -1;
-      for (int i = 0; i < lines.length; i++) {
-        final line = lines[i];
-        if (position < line.start) {
-          break;
-        }
-        if (current == -1 || line.start > lines[current].start) {
-          current = i;
+      if (position >= lines.last.start) {
+        current = lines.length - 1;
+      } else {
+        for (int i = 0; i < lines.length; i++) {
+          final line = lines[i];
+          if (position < line.start) {
+            break;
+          }
+          if (current == -1 || line.start > lines[current].start) {
+            current = i;
+          }
         }
       }
 
