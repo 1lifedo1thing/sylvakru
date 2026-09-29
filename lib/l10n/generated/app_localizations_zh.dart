@@ -656,4 +656,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get savedSuccessfully => '保存成功';
+
+  @override
+  String get controlCenterLyrics => '控制中心歌词';
 }

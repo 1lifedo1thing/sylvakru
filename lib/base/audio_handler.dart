@@ -50,6 +50,8 @@ final autoPlayOnStartupNotifier = ValueNotifier(false);
 
 final currentLyricsIndexNotifier = ValueNotifier(-1);
 
+final controlCenterLyricsNotifier = ValueNotifier(false);
+
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
   audioHandler = await AudioService.init(
@@ -202,6 +204,15 @@ class MyAudioHandler extends BaseAudioHandler {
 
       if (current != currentLyricsIndexNotifier.value) {
         currentLyricsIndexNotifier.value = current;
+
+        if (controlCenterLyricsNotifier.value) {
+          updateServiceMediaItem(
+            currentSongNotifier.value!,
+            lyric: lines[current].text,
+          );
+          updatePlaybackState();
+        }
+
         if (isMobile) {
           HomeWidgetService.updateLyricsIndex();
         }
@@ -694,7 +705,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  void updateServiceMediaItem(MyAudioMetadata currentSong) {
+  void updateServiceMediaItem(MyAudioMetadata currentSong, {String? lyric}) {
     Uri? artUri;
 
     if (currentSong.picture.isExist) {
@@ -704,7 +715,7 @@ class MyAudioHandler extends BaseAudioHandler {
     mediaItem.add(
       MediaItem(
         id: currentSong.id,
-        title: getTitle(currentSong),
+        title: lyric ?? getTitle(currentSong),
         artist: getArtist(currentSong),
         album: getAlbum(currentSong),
         artUri: artUri, // file:// URI

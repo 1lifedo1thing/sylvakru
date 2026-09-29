@@ -664,4 +664,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedSuccessfully => 'Saved successfully';
+
+  @override
+  String get controlCenterLyrics => 'Control Center Lyrics';
 }

@@ -1363,6 +1363,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved successfully'**
   String get savedSuccessfully;
+
+  /// No description provided for @controlCenterLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Control Center Lyrics'**
+  String get controlCenterLyrics;
 }
 
 class _AppLocalizationsDelegate

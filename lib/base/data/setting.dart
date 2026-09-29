@@ -101,6 +101,9 @@ class Setting {
         json['exitOnClose'] as bool? ?? exitOnCloseNotifier.value;
 
     recursiveScanNotifier.value = json['recursiveScan'] as bool? ?? false;
+
+    controlCenterLyricsNotifier.value =
+        json['controlCenterLyrics'] as bool? ?? false;
   }
 
   void save() {
@@ -132,6 +135,8 @@ class Setting {
         'exitOnClose': exitOnCloseNotifier.value,
 
         'recursiveScan': recursiveScanNotifier.value,
+
+        'controlCenterLyrics': controlCenterLyricsNotifier.value,
       }),
     );
   }

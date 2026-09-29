@@ -77,10 +77,10 @@ class _SettingsListState extends State<SettingsList> {
                   subtitle: Text(
                     l10n.settingCount(
                       (Platform.isAndroid
-                              ? 15
+                              ? 16
                               : Platform.isIOS
-                              ? 14
-                              : 13) +
+                              ? 15
+                              : 14) +
                           (isNotStreamSource ? 1 : 0),
                     ),
                     style: TextStyle(fontSize: 12),
@@ -137,6 +137,10 @@ class _SettingsListState extends State<SettingsList> {
 
         if (viewModeNotifier.value != .bigPicture)
           sliverBox(paddingIfNeed(isLandscape, fontListTile(context, l10n))),
+
+        sliverBox(
+          paddingIfNeed(isLandscape, controlCenterLyricsListTile(l10n)),
+        ),
 
         if (Platform.isIOS &&
             !isLandscape &&
@@ -575,6 +579,26 @@ class _SettingsListState extends State<SettingsList> {
           ),
         );
       },
+    );
+  }
+
+  Widget controlCenterLyricsListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(desktopLyricsImage, size: iconSize),
+      title: Text(l10n.controlCenterLyrics),
+      trailing: SizedBox(
+        width: 50,
+        child: MySwitch(
+          valueNotifier: controlCenterLyricsNotifier,
+          onToggleCallBack: () {
+            setting.save();
+            if (!controlCenterLyricsNotifier.value &&
+                currentSongNotifier.value != null) {
+              audioHandler.updateServiceMediaItem(currentSongNotifier.value!);
+            }
+          },
+        ),
+      ),
     );
   }
 
