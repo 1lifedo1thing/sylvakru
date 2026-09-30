@@ -1166,6 +1166,18 @@ abstract class AppLocalizations {
   /// **'Adjust audio levels across different frequencies'**
   String get equalizerDescription;
 
+  /// No description provided for @widgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Screen Widgets'**
+  String get widgets;
+
+  /// No description provided for @widgetsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Now Playing and your playlists on the Home Screen'**
+  String get widgetsDescription;
+
   /// No description provided for @futurePremium.
   ///
   /// In en, this message translates to:

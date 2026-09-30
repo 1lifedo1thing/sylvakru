@@ -177,6 +177,8 @@
   "themeDescription": "支持开启主页面生动模式",
   "fontDescription": "可使用自定义字体",
   "equalizerDescription": "可调节不同频段的音量",
+  "widgets": "桌面小组件",
+  "widgetsDescription": "在主屏幕展示正在播放与你的歌单",
   "futurePremium": "未来高级功能",
   "futurePremiumDescription": "后续新增的高级功能自动解锁",
   "premiumRequiredMessage": "当前功能需要解锁高级功能后才能使用",

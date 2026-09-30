@@ -226,6 +226,8 @@
   "themeDescription": "Unlock Vivid Mode for the Main Page",
   "fontDescription": "Use custom fonts",
   "equalizerDescription": "Adjust audio levels across different frequencies",
+  "widgets": "Home Screen Widgets",
+  "widgetsDescription": "Show Now Playing and your playlists on the Home Screen",
   "futurePremium": "Future Premium Features",
   "futurePremiumDescription": "All future premium features will be unlocked automatically",
   "premiumRequiredMessage": "This feature requires Premium Features to be unlocked before it can be used",

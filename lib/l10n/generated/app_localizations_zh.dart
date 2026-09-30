@@ -557,6 +557,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get equalizerDescription => '可调节不同频段的音量';
 
   @override
+  String get widgets => '桌面小组件';
+
+  @override
+  String get widgetsDescription => '在主屏幕展示正在播放与你的歌单';
+
+  @override
   String get futurePremium => '未来高级功能';
 
   @override

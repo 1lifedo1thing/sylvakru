@@ -559,6 +559,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Adjust audio levels across different frequencies';
 
   @override
+  String get widgets => 'Home Screen Widgets';
+
+  @override
+  String get widgetsDescription =>
+      'Show Now Playing and your playlists on the Home Screen';
+
+  @override
   String get futurePremium => 'Future Premium Features';
 
   @override

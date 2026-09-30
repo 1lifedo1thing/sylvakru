@@ -312,7 +312,8 @@ struct PlaylistsWidgetTimelineProvider: TimelineProvider {
 
       family: context.family,
 
-      isPremium: true
+      isPremium: widgetIsPremium()
+
     )
   }
 

@@ -55,7 +55,7 @@ private func placeholderEntry(family: WidgetFamily) -> NowPlayingWidgetEntry {
     lyrics: String(localized: "Lyrics"),
     lyricsIndex: 0,
     family: family,
-    isPremium: true
+    isPremium: widgetIsPremium()
   )
 }
 
