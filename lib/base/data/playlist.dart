@@ -48,12 +48,11 @@ class PlaylistManager {
   }
 
   Future<void> _prepareForSync() async {
+    _playlistsFile = File(
+      "${getPlaylistConfigPath(sourceType)}/sylvakru_playlists.json",
+    );
+    initFile(_playlistsFile, true);
     if (isStreamSource) {
-      _playlistsFile = File(
-        "${getPlaylistConfigPath(sourceType)}/sylvakru_playlists.json",
-      );
-      initFile(_playlistsFile, true);
-
       final tmpPlaylist = await streamClient?.getPlaylists();
       for (final playlist in tmpPlaylist ?? <Playlist>[]) {
         if (playlist.name == '_sylvakru_play_queue_') {
@@ -66,6 +65,14 @@ class PlaylistManager {
         playlistMap[playlist.name]!.id = playlist.id;
       }
       update();
+    } else {
+      final contentList = await readJsonListFile(_playlistsFile);
+      for (final content in contentList) {
+        final playlist = Playlist(name: content);
+        addPlaylist(playlist);
+      }
+
+      updateNotifier.value++;
     }
   }
 
