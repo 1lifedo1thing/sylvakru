@@ -111,6 +111,16 @@
         }
       }
     },
+    "Unlock with Premium" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁高级功能后可用"
+          }
+        }
+      }
+    },
     "Unsupported Size" : {
       "localizations" : {
         "zh-Hans" : {

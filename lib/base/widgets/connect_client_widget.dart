@@ -179,7 +179,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                           horizontal: 24,
                           vertical: 8,
                         ),
-                        child: Text(l10n.save),
+                        child: Text(l10n.connect),
                       ),
                     ),
                   )

@@ -313,6 +313,8 @@ struct PlaylistsWidgetEntry: TimelineEntry {
   let playlistNames: [String]
 
   let family: WidgetFamily
+
+  let isPremium: Bool
 }
 
 // MARK: - Timeline Provider
@@ -341,7 +343,9 @@ struct PlaylistsWidgetTimelineProvider: TimelineProvider {
         count: count
       ),
 
-      family: context.family
+      family: context.family,
+
+      isPremium: true
     )
   }
 
@@ -455,7 +459,8 @@ struct PlaylistsWidgetTimelineProvider: TimelineProvider {
         date: Date(),
         coverPaths: coverPaths,
         playlistNames: playlistNames,
-        family: context.family
+        family: context.family,
+        isPremium: widgetIsPremium()
       )
 
     let timeline =
@@ -543,7 +548,7 @@ struct ChangePageIntent: AppIntent {
 
     WidgetCenter.shared
       .reloadTimelines(
-        ofKind: "Playlists"
+        ofKind: "PlaylistsWidget"
       )
 
     return .result()
@@ -555,6 +560,10 @@ struct ChangePageIntent: AppIntent {
 struct PlaylistsWidgetEntryView: View {
 
   let entry: PlaylistsWidgetEntry
+
+  var isLocked: Bool {
+    !entry.isPremium && entry.family != .systemMedium
+  }
 
   var body: some View {
 
@@ -622,10 +631,21 @@ struct PlaylistsWidgetEntryView: View {
         )
       }
     }
+    // contentMarginsDisabled moves the old system margin into this manual
+    // padding, so the premium overlay below can cover the full widget.
+    .padding(20)
     .containerBackground(
       widgetColor("coverColor", default: 0xFFFF_FFFF),
       for: .widget
     )
+    .overlay {
+      if isLocked {
+        PremiumOverlay(
+          background: widgetColor("coverColor", default: 0xFFFF_FFFF),
+          foreground: widgetForegroundColor
+        )
+      }
+    }
   }
 }
 
@@ -638,6 +658,13 @@ struct GridView: View {
   let columns: Int
 
   let itemsPerPage: Int
+
+  // Same rule as PlaylistsWidgetEntryView.isLocked: the widget buttons are
+  // handled by a native interaction layer above the rendered content, so
+  // while locked the page buttons must not be rendered as Buttons at all.
+  var isLocked: Bool {
+    !entry.isPremium && entry.family != .systemMedium
+  }
 
   private let gridSpacing: CGFloat = 12
 
@@ -991,35 +1018,46 @@ struct GridView: View {
         currentPage >= totalPages - 1
     }
 
-    return Button(
-      intent:
-        ChangePageIntent(
-          family: entry.family,
-          targetPage: targetPage
-        )
-    ) {
-
-      Image(
-        systemName:
-          direction == .previous
-          ? "arrowtriangle.left.fill"
-          : "arrowtriangle.right.fill"
-      )
-      .font(
-        .system(
-          size: 16,
-          weight: .medium
-        )
-      )
-      .foregroundColor(
-        disabled
-          ? widgetForegroundColor.opacity(0.3)
-          : widgetForegroundColor
-      )
-    }
-    .buttonStyle(
-      .plain
+    let arrow = Image(
+      systemName:
+        direction == .previous
+        ? "arrowtriangle.left.fill"
+        : "arrowtriangle.right.fill"
     )
+    .font(
+      .system(
+        size: 16,
+        weight: .medium
+      )
+    )
+    .foregroundColor(
+      disabled
+        ? widgetForegroundColor.opacity(0.3)
+        : widgetForegroundColor
+    )
+
+    return Group {
+
+      if isLocked {
+
+        arrow
+
+      } else {
+
+        Button(
+          intent:
+            ChangePageIntent(
+              family: entry.family,
+              targetPage: targetPage
+            )
+        ) {
+          arrow
+        }
+        .buttonStyle(
+          .plain
+        )
+      }
+    }
   }
 
   // MARK: Page Indicators
@@ -1082,6 +1120,7 @@ struct PlaylistsWidget: Widget {
     .supportedFamilies(
       supportedFamilies
     )
+    .contentMarginsDisabled()
   }
 
   private var supportedFamilies: [WidgetFamily] {

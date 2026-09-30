@@ -56,6 +56,7 @@ struct NowPlayingWidgetEntry: TimelineEntry {
   let lyrics: String
   let lyricsIndex: Int
   let family: WidgetFamily
+  let isPremium: Bool
 
 }
 
@@ -76,7 +77,8 @@ private func placeholderEntry(family: WidgetFamily) -> NowPlayingWidgetEntry {
     duration: 0,
     lyrics: String(localized: "Lyrics"),
     lyricsIndex: 0,
-    family: family
+    family: family,
+    isPremium: true
   )
 }
 
@@ -112,7 +114,8 @@ struct NowPlayingWidgetTimelineProvider: TimelineProvider {
       duration: 0,
       lyrics: sharedDefaults?.string(forKey: "lyrics") ?? "",
       lyricsIndex: sharedDefaults?.integer(forKey: "lyricsIndex") ?? 0,
-      family: context.family
+      family: context.family,
+      isPremium: widgetIsPremium()
     )
   }
 
@@ -141,8 +144,30 @@ struct NowPlayingWidgetTimelineProvider: TimelineProvider {
 struct NowPlayingWidgetEntryView: View {
   var entry: NowPlayingWidgetTimelineProvider.Entry
 
+  var isLocked: Bool {
+    !entry.isPremium && entry.family != .systemSmall
+  }
+
   var lyricsLines: [String] {
     entry.lyrics.components(separatedBy: "\n")
+  }
+
+  // Widget buttons are handled by a native interaction layer above the
+  // rendered content, so PremiumOverlay can't block them by covering them;
+  // while the size is locked, render the controls as plain images instead.
+  @ViewBuilder
+  private func controlButton(
+    function: String,
+    @ViewBuilder label: () -> some View
+  ) -> some View {
+    if isLocked {
+      label()
+    } else {
+      Button(intent: BackgroundIntent(function: function)) {
+        label()
+      }
+      .buttonStyle(.plain)
+    }
   }
 
   func lyricsView(fontSize: CGFloat, offset: CGFloat) -> some View {
@@ -192,6 +217,10 @@ struct NowPlayingWidgetEntryView: View {
         smallView
       case .systemMedium:
         mediumView
+          // The HStack hugs its fixed-height children, so the view ends up
+          // shorter than the widget and the premium overlay only covers the
+          // content; expand it so the overlay reaches the top/bottom edges.
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
       case .systemLarge:
         largeView
       case .systemExtraLarge, .systemExtraLargePortrait:
@@ -204,6 +233,14 @@ struct NowPlayingWidgetEntryView: View {
       Color(argb: entry.coverColor),
       for: .widget
     )
+    .overlay {
+      if isLocked {
+        PremiumOverlay(
+          background: Color(argb: entry.coverColor),
+          foreground: Color(argb: entry.foregroundColor)
+        )
+      }
+    }
   }
 
   var smallView: some View {
@@ -226,12 +263,11 @@ struct NowPlayingWidgetEntryView: View {
 
         Spacer()
 
-        Button(intent: BackgroundIntent(function: "toggleFavorite")) {
+        controlButton(function: "toggleFavorite") {
           Image(systemName: entry.isFavorite ? "star.fill" : "star")
             .font(.system(size: 20))
             .foregroundColor(entry.isFavorite ? .red : Color(argb: entry.foregroundColor))
         }
-        .buttonStyle(.plain)
 
       }
       .padding(.horizontal, 16)
@@ -255,7 +291,7 @@ struct NowPlayingWidgetEntryView: View {
       HStack(alignment: .bottom) {
         Spacer()
 
-        Button(intent: BackgroundIntent(function: "togglePlay")) {
+        controlButton(function: "togglePlay") {
           Image(
             systemName: entry.isPlaying
               ? "pause.circle.fill"
@@ -264,7 +300,6 @@ struct NowPlayingWidgetEntryView: View {
           .font(.system(size: 40))
           .foregroundColor(Color(argb: entry.foregroundColor))
         }
-        .buttonStyle(.plain)
       }
       .padding(.trailing, 8)
       .padding(.bottom, 16)
@@ -313,44 +348,37 @@ struct NowPlayingWidgetEntryView: View {
 
           Spacer()
 
-          Button(intent: BackgroundIntent(function: "toggleFavorite")) {
+          controlButton(function: "toggleFavorite") {
             Image(systemName: entry.isFavorite ? "star.fill" : "star")
               .font(.system(size: 20))
               .foregroundColor(entry.isFavorite ? .red : Color(argb: entry.foregroundColor))
           }
-          .buttonStyle(.plain)
         }
 
         Spacer()
 
         HStack {
-          Button(intent: BackgroundIntent(function: "skipToPrevious")) {
+          controlButton(function: "skipToPrevious") {
             Image(systemName: "backward.fill")
               .font(.system(size: 25))
               .foregroundColor(Color(argb: entry.foregroundColor))
-
           }
-          .buttonStyle(.plain)
 
           Spacer()
 
-          Button(intent: BackgroundIntent(function: "togglePlay")) {
+          controlButton(function: "togglePlay") {
             Image(systemName: entry.isPlaying ? "pause.circle.fill" : "play.circle.fill")
               .font(.system(size: 40))
               .foregroundColor(Color(argb: entry.foregroundColor))
-
           }
-          .buttonStyle(.plain)
 
           Spacer()
 
-          Button(intent: BackgroundIntent(function: "skipToNext")) {
+          controlButton(function: "skipToNext") {
             Image(systemName: "forward.fill")
               .font(.system(size: 25))
               .foregroundColor(Color(argb: entry.foregroundColor))
-
           }
-          .buttonStyle(.plain)
         }
       }
       .frame(height: 120)

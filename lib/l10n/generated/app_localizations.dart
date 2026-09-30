@@ -1369,6 +1369,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Control Center Lyrics'**
   String get controlCenterLyrics;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @notConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'is Not Connected'**
+  String get notConnected;
 }
 
 class _AppLocalizationsDelegate
