@@ -8,6 +8,7 @@ import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
 class HomeWidgetService {
@@ -134,7 +135,14 @@ class HomeWidgetService {
           await HomeWidget.saveFile('cover$i', Uint8List(0));
         }
 
-        await HomeWidget.saveWidgetData('name$i', playlist.name);
+        if (playlist.isFavorite) {
+          await HomeWidget.saveWidgetData(
+            'name$i',
+            getAppLocalizations().favorites,
+          );
+        } else {
+          await HomeWidget.saveWidgetData('name$i', playlist.name);
+        }
       }
     } catch (error) {
       logger.output("widget save error: $error");

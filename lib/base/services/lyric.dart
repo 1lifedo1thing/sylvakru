@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:charset/charset.dart';
 import 'package:sylvakru/base/app.dart';
@@ -7,8 +6,7 @@ import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
-import 'package:sylvakru/l10n/generated/app_localizations.dart';
-import 'package:sylvakru/l10n/generated/app_localizations_en.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 
 class LyricToken {
   final Duration start;
@@ -86,17 +84,6 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   song.parsedLyrics = result;
 
   List<String> lines = [];
-  late AppLocalizations l10n;
-
-  if (localeNotifier.value != null) {
-    l10n = lookupAppLocalizations(localeNotifier.value!);
-  } else {
-    try {
-      l10n = lookupAppLocalizations(PlatformDispatcher.instance.locale);
-    } catch (_) {
-      l10n = AppLocalizationsEn();
-    }
-  }
 
   if (sourceType == .navidrome || sourceType == .feiniu) {
     String lyrics;
@@ -105,8 +92,10 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       lyrics = await File(song.lrcPath!).readAsString();
     } else {
       lyrics = await streamClient?.getLyricsById(song.id) ?? '';
-      await lycFile.create(recursive: true);
-      await lycFile.writeAsString(lyrics);
+      if (lyrics.isNotEmpty) {
+        await lycFile.create(recursive: true);
+        await lycFile.writeAsString(lyrics);
+      }
     }
 
     lines = lyrics.split(RegExp(r'[\n]'));
@@ -143,6 +132,9 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       lines = song.lyrics!.split(RegExp(r'[\n]'));
     }
   }
+
+  final l10n = getAppLocalizations();
+
   applyLrcParsing(
     result,
     lines,

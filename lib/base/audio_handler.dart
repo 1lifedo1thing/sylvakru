@@ -88,20 +88,10 @@ Future<void> initAudioService() async {
             toggleFavoriteState(currentSongNotifier.value!);
           }
         case 'skipToPrevious':
-          // wake up app
-          if (isPlayingNotifier.value == false) {
-            audioHandler.play();
-          }
-
           audioHandler.skipToPrevious();
         case 'togglePlay':
           audioHandler.togglePlay();
         case 'skipToNext':
-          // wake up app
-          if (isPlayingNotifier.value == false) {
-            audioHandler.play();
-          }
-
           audioHandler.skipToNext();
         default:
       }
@@ -646,6 +636,12 @@ class MyAudioHandler extends BaseAudioHandler {
 
     final currentSong = playQueue[currentIndex];
 
+    await _setLyricsAndUpdateColors(currentSong);
+
+    currentSongNotifier.value = currentSong;
+
+    currentLyricsIndexNotifier.value = -1;
+
     try {
       if (currentSong.cacheExist) {
         await _player.open(
@@ -696,12 +692,6 @@ class MyAudioHandler extends BaseAudioHandler {
     if (start == null) {
       _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
     }
-
-    await _setLyricsAndUpdateColors(currentSong);
-
-    currentSongNotifier.value = currentSong;
-
-    currentLyricsIndexNotifier.value = -1;
 
     if (Platform.isIOS) {
       HomeWidgetService.updateNowPlayingWidget();
