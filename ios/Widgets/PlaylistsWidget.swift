@@ -211,44 +211,11 @@ private func widgetFamily(
 
 // MARK: - Widget Page Family
 
-enum WidgetPageFamily: String, AppEnum {
-
-  case medium
-  case large
-  case extraLarge
-  case extraLargePortrait
-
-  static var typeDisplayRepresentation: TypeDisplayRepresentation {
-    TypeDisplayRepresentation(
-      name: "Widget Size"
-    )
-  }
-
-  static var caseDisplayRepresentations: [WidgetPageFamily: DisplayRepresentation] {
-
-    [
-      .medium:
-        DisplayRepresentation(
-          title: "Medium"
-        ),
-
-      .large:
-        DisplayRepresentation(
-          title: "Large"
-        ),
-
-      .extraLarge:
-        DisplayRepresentation(
-          title: "Extra Large"
-        ),
-
-      .extraLargePortrait:
-        DisplayRepresentation(
-          title: "Extra Large Portrait"
-        ),
-    ]
-  }
-}
+// (No AppEnum here anymore: ChangePageIntent's family parameter is a plain
+// String raw value. AppEnum parameter hydration failed on the first intent
+// execution in a cold extension process and silently fell back to the
+// init() default, so the large widget's first taps wrote the medium page
+// key. Plain strings hydrate through Codable and have no registry to miss.)
 
 // MARK: - Items Per Page
 
@@ -482,15 +449,10 @@ struct ChangePageIntent: AppIntent {
   static var title: LocalizedStringResource =
     "Switch Widget Page"
 
-  // IMPORTANT:
-  // The widget family must be an actual AppIntent
-  // parameter so that the value survives when the
-  // intent is executed by WidgetKit.
-
   @Parameter(
     title: "Widget Size"
   )
-  var family: WidgetPageFamily
+  var family: String
 
   @Parameter(
     title: "Target Page"
@@ -500,7 +462,7 @@ struct ChangePageIntent: AppIntent {
   init() {
 
     family =
-      .medium
+      WidgetFamilyKey.medium
 
     targetPage =
       0
@@ -512,12 +474,9 @@ struct ChangePageIntent: AppIntent {
   ) {
 
     self.family =
-      WidgetPageFamily(
-        rawValue:
-          familyKey(
-            for: family
-          )
-      ) ?? .medium
+      familyKey(
+        for: family
+      )
 
     self.targetPage =
       targetPage
@@ -531,7 +490,7 @@ struct ChangePageIntent: AppIntent {
     guard
       let widgetFamily =
         widgetFamily(
-          from: family.rawValue
+          from: family
         )
     else {
 
@@ -546,10 +505,10 @@ struct ChangePageIntent: AppIntent {
       for: widgetFamily
     )
 
-    WidgetCenter.shared
-      .reloadTimelines(
-        ofKind: "PlaylistsWidget"
-      )
+    // No manual reloadTimelines here: the system already re-renders the
+    // tapped widget when perform() finishes, and reloading the kind would
+    // rebuild EVERY placed Playlists widget (each re-decodes its covers),
+    // which visibly slowed the page flip.
 
     return .result()
   }
@@ -889,7 +848,7 @@ struct GridView: View {
   ) -> some View {
 
     if !path.isEmpty,
-      let image = widgetImage(at: path, maxPixels: 600)
+      let image = WidgetImageCache.shared.image(at: path, maxPixels: 600)
     {
 
       // A square cell with the cover letterboxed inside it. The explicit

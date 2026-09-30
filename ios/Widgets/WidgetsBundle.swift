@@ -59,6 +59,45 @@ func widgetImage(
   return UIImage(cgImage: cgImage)
 }
 
+// Every timeline rebuild re-decodes whatever covers the view shows; without
+// a cache each page flip re-reads them all from disk. NSCache is already
+// thread-safe (timeline providers for multiple placed families rebuild
+// concurrently) and evicts on its own under memory pressure.
+final class WidgetImageCache {
+  static let shared = WidgetImageCache()
+
+  private let cache = NSCache<NSString, UIImage>()
+
+  private init() {
+    cache.countLimit = 48
+  }
+
+  func image(
+    at path: String,
+    maxPixels: CGFloat
+  ) -> UIImage? {
+    guard !path.isEmpty else { return nil }
+
+    var key = path
+    if let attributes = try? FileManager.default.attributesOfItem(atPath: path),
+      let modified = attributes[.modificationDate] as? Date
+    {
+      key += "#\(modified.timeIntervalSince1970)"
+    }
+
+    if let hit = cache.object(forKey: key as NSString) {
+      return hit
+    }
+
+    guard let image = widgetImage(at: path, maxPixels: maxPixels) else {
+      return nil
+    }
+
+    cache.setObject(image, forKey: key as NSString)
+    return image
+  }
+}
+
 // Overlay for sizes that require premium: NowPlaying above systemSmall,
 // Playlists above systemMedium. The scrim keeps the hint readable over any
 // cover. NOTE: covering the view does NOT disable widget buttons - they are

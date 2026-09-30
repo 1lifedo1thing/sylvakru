@@ -14,37 +14,9 @@ extension Color {
   }
 }
 
-// Every timeline reload re-evaluates the whole view, so decoding the cover
-// from disk each time is wasted IO; cache it keyed by path + mtime so an
-// overwritten cover file invalidates naturally.
-enum CoverImageCache {
-  // Timeline providers for multiple placed families run concurrently; guard
-  // the cache so a torn write can't crash the render.
-  private static let lock = NSLock()
-  private static var cached: (key: String, image: UIImage)?
-
-  static func image(for path: String) -> UIImage? {
-    guard !path.isEmpty else { return nil }
-
-    var key = path
-    if let attributes = try? FileManager.default.attributesOfItem(atPath: path),
-      let modified = attributes[.modificationDate] as? Date
-    {
-      key += "#\(modified.timeIntervalSince1970)"
-    }
-
-    lock.lock()
-    defer { lock.unlock() }
-
-    if let hit = cached, hit.key == key {
-      return hit.image
-    }
-
-    guard let image = widgetImage(at: path, maxPixels: 600) else { return nil }
-    cached = (key, image)
-    return image
-  }
-}
+// Every timeline reload re-evaluates the whole view; covers come from the
+// shared WidgetImageCache (keyed by path + mtime so an overwritten cover
+// file invalidates naturally).
 
 struct NowPlayingWidgetEntry: TimelineEntry {
   let date: Date
@@ -252,7 +224,7 @@ struct NowPlayingWidgetEntryView: View {
     VStack {
       HStack(alignment: .top) {
         Group {
-          if let uiImage = CoverImageCache.image(for: entry.coverPath) {
+          if let uiImage = WidgetImageCache.shared.image(at: entry.coverPath, maxPixels: 600) {
             Image(uiImage: uiImage)
               .resizable()
               .aspectRatio(contentMode: .fit)
@@ -315,7 +287,7 @@ struct NowPlayingWidgetEntryView: View {
   var mediumView: some View {
     HStack {
       Group {
-        if let uiImage = CoverImageCache.image(for: entry.coverPath) {
+        if let uiImage = WidgetImageCache.shared.image(at: entry.coverPath, maxPixels: 600) {
           Image(uiImage: uiImage)
             .resizable()
             .aspectRatio(contentMode: .fit)
