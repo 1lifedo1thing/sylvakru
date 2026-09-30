@@ -18,7 +18,10 @@ extension Color {
 // from disk each time is wasted IO; cache it keyed by path + mtime so an
 // overwritten cover file invalidates naturally.
 enum CoverImageCache {
-  static var cached: (key: String, image: UIImage)?
+  // Timeline providers for multiple placed families run concurrently; guard
+  // the cache so a torn write can't crash the render.
+  private static let lock = NSLock()
+  private static var cached: (key: String, image: UIImage)?
 
   static func image(for path: String) -> UIImage? {
     guard !path.isEmpty else { return nil }
@@ -30,12 +33,14 @@ enum CoverImageCache {
       key += "#\(modified.timeIntervalSince1970)"
     }
 
+    lock.lock()
+    defer { lock.unlock() }
+
     if let hit = cached, hit.key == key {
       return hit.image
     }
 
-    guard let loaded = UIImage(contentsOfFile: path) else { return nil }
-    let image = loaded.preparingForDisplay() ?? loaded
+    guard let image = widgetImage(at: path, maxPixels: 600) else { return nil }
     cached = (key, image)
     return image
   }
@@ -250,7 +255,7 @@ struct NowPlayingWidgetEntryView: View {
           if let uiImage = CoverImageCache.image(for: entry.coverPath) {
             Image(uiImage: uiImage)
               .resizable()
-              .aspectRatio(contentMode: .fill)
+              .aspectRatio(contentMode: .fit)
           } else {
             Image(systemName: "music.note")
               .resizable()
@@ -313,7 +318,7 @@ struct NowPlayingWidgetEntryView: View {
         if let uiImage = CoverImageCache.image(for: entry.coverPath) {
           Image(uiImage: uiImage)
             .resizable()
-            .aspectRatio(contentMode: .fill)
+            .aspectRatio(contentMode: .fit)
         } else {
           Image(systemName: "music.note")
             .resizable()

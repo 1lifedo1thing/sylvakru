@@ -5,6 +5,7 @@
 //  Created by wuhangyu on 2026/9/29.
 //
 
+import ImageIO
 import SwiftUI
 import WidgetKit
 
@@ -22,6 +23,40 @@ struct WidgetsBundle: WidgetBundle {
 func widgetIsPremium() -> Bool {
   UserDefaults(suiteName: "group.com.afalphy.sylvakru")?
     .object(forKey: "isPremium") as? Bool ?? true
+}
+
+// WidgetKit fails the timeline render when the decoded bitmap blows past
+// the widget's memory/archive limits - a large cover killed the widget even
+// with aspect-fit display. Decode straight to a bounded thumbnail with
+// ImageIO instead of materializing the full-resolution image first: the
+// aspect ratio is preserved, nothing is cropped, and EXIF orientation is
+// applied.
+func widgetImage(
+  at path: String,
+  maxPixels: CGFloat
+) -> UIImage? {
+  let options: [CFString: Any] = [
+    kCGImageSourceCreateThumbnailFromImageAlways: true,
+    kCGImageSourceCreateThumbnailWithTransform: true,
+    kCGImageSourceShouldCacheImmediately: true,
+    kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+  ]
+
+  guard
+    let source = CGImageSourceCreateWithURL(
+      URL(fileURLWithPath: path) as CFURL,
+      nil
+    ),
+    let cgImage = CGImageSourceCreateThumbnailAtIndex(
+      source,
+      0,
+      options as CFDictionary
+    )
+  else {
+    return nil
+  }
+
+  return UIImage(cgImage: cgImage)
 }
 
 // Overlay for sizes that require premium: NowPlaying above systemSmall,

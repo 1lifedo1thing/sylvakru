@@ -889,26 +889,33 @@ struct GridView: View {
   ) -> some View {
 
     if !path.isEmpty,
-      let image =
-        UIImage(
-          contentsOfFile: path
-        )
+      let image = widgetImage(at: path, maxPixels: 600)
     {
 
-      Image(
-        uiImage: image
-      )
-      .resizable()
-      .scaledToFill()
-      .aspectRatio(
-        1,
-        contentMode: .fit
-      )
-      .clipShape(
-        RoundedRectangle(
-          cornerRadius: 6
+      // A square cell with the cover letterboxed inside it. The explicit
+      // ratio in aspectRatio(1, contentMode: .fit) only squares the layout
+      // bounds - a resizable image stretches its bitmap to fill them - so
+      // the square comes from a Color.clear container and scaledToFit
+      // (which preserves the image's own aspect ratio) does the fitting.
+
+      Color.clear
+        .aspectRatio(
+          1,
+          contentMode: .fit
         )
-      )
+        .overlay {
+
+          Image(
+            uiImage: image
+          )
+          .resizable()
+          .scaledToFit()
+        }
+        .clipShape(
+          RoundedRectangle(
+            cornerRadius: 6
+          )
+        )
 
     } else {
 
