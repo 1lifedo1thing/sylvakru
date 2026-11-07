@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
@@ -32,6 +34,7 @@ import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/layer/lyrics_page_layer.dart';
+
 import 'dart:async';
 
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
@@ -51,6 +54,11 @@ final volumeNotifier = ValueNotifier(0.3);
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
 final currentLyricsIndexNotifier = ValueNotifier(-1);
+
+/// Indices of the simultaneously active lyric lines, updated alongside
+/// [currentLyricsIndexNotifier] but only when the set actually changes (a
+/// line boundary), so the rows don't rebuild on every position tick.
+final lyricsActiveIndicesNotifier = ValueNotifier<List<int>>(const []);
 
 final controlCenterLyricsNotifier = ValueNotifier(false);
 
@@ -79,12 +87,10 @@ Future<void> initAudioService() async {
   _session.interruptionEventStream.listen((event) {
     if (event.begin) {
       audioHandler.pause();
-    } else {
-      audioHandler.play();
     }
   });
 
-  if (isMobile) {
+  if (Platform.isIOS) {
     const channel = MethodChannel('com.afalphy.audio_control');
 
     channel.setMethodCallHandler((call) async {
@@ -117,6 +123,10 @@ class MyAudioHandler extends BaseAudioHandler {
   int _tmpPlayMode = 0;
   DateTime? _playLastSyncTime;
   Duration _playedDuration = Duration.zero;
+
+  // Last active-line set pushed to the iOS widget ('-1' = none), so the
+  // widget only reloads when the simultaneous-lyric set actually changes.
+  String _lastWidgetLyricsActive = '-1';
 
   File? _playQueueState;
   late File _playState;
@@ -167,6 +177,11 @@ class MyAudioHandler extends BaseAudioHandler {
           await pause();
           return;
         }
+
+        if (needPause) {
+          await pause();
+        }
+
         if (playModeNotifier.value == 2) {
           // repeat
           await load();
@@ -177,6 +192,7 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     currentSongNotifier.addListener(() {
+      needPause = false;
       if (viewModeNotifier.value == .bigPicture) {
         if (useCurrentSongForBg) {
           colorManager.updateBigPictureRelatedColors(
@@ -216,10 +232,25 @@ class MyAudioHandler extends BaseAudioHandler {
 
     position += Duration(milliseconds: currentSong.lyricsTimeOffset);
 
+    // The rows and the iOS widget both highlight every simultaneously
+    // active line (duet), so track that set independently of the primary
+    // index — with overlapping lines its boundaries differ from the index's.
+    // Computed before the fast path below so a set change is never swallowed
+    // by it, and pushed only when it actually changes (line boundaries),
+    // never on every position tick.
+    final active = activeLyricIndices(lines, position);
+    if (!listEquals(active, lyricsActiveIndicesNotifier.value)) {
+      lyricsActiveIndicesNotifier.value = active;
+    }
+    final widgetActive = active.isEmpty ? '-1' : active.join(',');
+    final widgetActiveChanged = widgetActive != _lastWidgetLyricsActive;
+    _lastWidgetLyricsActive = widgetActive;
+
     if (tmp >= 0 &&
         tmp + 1 < lines.length &&
         position >= lines[tmp].start &&
-        position <= lines[tmp + 1].start) {
+        position <= lines[tmp + 1].start &&
+        !widgetActiveChanged) {
       return;
     }
 
@@ -238,17 +269,18 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     }
 
-    if (current != currentLyricsIndexNotifier.value) {
+    final indexChanged = current != currentLyricsIndexNotifier.value;
+    if (indexChanged) {
       currentLyricsIndexNotifier.value = current;
 
       if (controlCenterLyricsNotifier.value) {
         updateServiceMediaItem(currentSong, lyric: lines[current].text);
         updatePlaybackState();
       }
+    }
 
-      if (Platform.isIOS) {
-        HomeWidgetService.updateLyricsIndex();
-      }
+    if ((indexChanged || widgetActiveChanged) && Platform.isIOS) {
+      HomeWidgetService.updateLyricsIndex(active);
     }
   }
 
@@ -669,11 +701,6 @@ class MyAudioHandler extends BaseAudioHandler {
       if (buffering) {
         _loadGraceSawBuffering = true;
       } else if (_loadGraceSawBuffering) {
-        if (needPause) {
-          // ensure widget is updated
-          await Future.delayed(Duration(milliseconds: 500));
-          await pause();
-        }
         _endLoadGrace();
       }
     });
@@ -762,6 +789,8 @@ class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = currentSong;
 
     currentLyricsIndexNotifier.value = -1;
+    lyricsActiveIndicesNotifier.value = const [];
+    _lastWidgetLyricsActive = '-1';
 
     if (Platform.isIOS) {
       await HomeWidgetService.updateNowPlayingWidget();

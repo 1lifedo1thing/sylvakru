@@ -105,6 +105,14 @@ class Setting {
         json['lyricsFontSizeOffset'] as double? ??
         lyricsFontSizeOffsetNotifier.value;
 
+    final fontWeightValue = json['lyricsFontWeight'] as int?;
+    if (fontWeightValue != null) {
+      lyricsFontWeightNotifier.value = FontWeight.values.firstWhere(
+        (weight) => weight.value == fontWeightValue,
+        orElse: () => lyricsFontWeightNotifier.value,
+      );
+    }
+
     exitOnCloseNotifier.value =
         json['exitOnClose'] as bool? ?? exitOnCloseNotifier.value;
 
@@ -112,6 +120,9 @@ class Setting {
 
     controlCenterLyricsNotifier.value =
         json['controlCenterLyrics'] as bool? ?? false;
+
+    lyricWaveEnabledNotifier.value =
+        json['lyricsWave'] as bool? ?? lyricWaveEnabledNotifier.value;
   }
 
   void save() {
@@ -142,11 +153,14 @@ class Setting {
         'lyricsPageTheme': lyricsPageThemeNotifier.value.name,
 
         'lyricsFontSizeOffset': lyricsFontSizeOffsetNotifier.value,
+        'lyricsFontWeight': lyricsFontWeightNotifier.value.value,
         'exitOnClose': exitOnCloseNotifier.value,
 
         'recursiveScan': recursiveScanNotifier.value,
 
         'controlCenterLyrics': controlCenterLyricsNotifier.value,
+
+        'lyricsWave': lyricWaveEnabledNotifier.value,
       }),
     );
   }
