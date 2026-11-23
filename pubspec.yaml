@@ -16,14 +16,14 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 4.6.1+14
+version: 4.6.2+14
 
 environment:
   sdk: ^3.11.0
   # Specify a fixed version to ensure consistent behavior.
   # If you want to use a newer version, add ^ before the version number,
   # or directly set the version you want.
-  flutter: 3.47.8
+  flutter: 3.50.1
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -192,8 +192,6 @@ icons_launcher:
       enable: true
       adaptive_background_image: "app_icons/background.png"
       adaptive_foreground_image: "app_icons/android.png"
-    macos:
-      enable: true
     linux:
       image_path: "app_icons/win_linux.png"
       enable: true
